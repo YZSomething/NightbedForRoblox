@@ -368,13 +368,17 @@ runcode(function()
     local killauraremote = bedwars.ClientHandler:Get(bedwars.AttackRemote)
     
     local function attackEntity(plr)
-        local root = plr.Character.HumanoidRootPart
+        local root = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
         if not root then
             return nil
         end
         
-        local selfrootpos = lplr.Character.HumanoidRootPart.Position
-        local selfpos = selfrootpos + (killaurarange.Value > 14 and (selfrootpos - root.Position).magnitude > 14 and (CFrame.lookAt(selfrootpos, root.Position).lookVector * 4) or Vector3.zero)
+        local selfrootpos = lplr.Character and lplr.Character:FindFirstChild("HumanoidRootPart") and lplr.Character.HumanoidRootPart.Position
+        if not selfrootpos then
+            return nil
+        end
+        
+        local selfpos = selfrootpos + (killaurarange.Value > 14 and (selfrootpos - root.Position).Magnitude > 14 and (CFrame.lookAt(selfrootpos, root.Position).LookVector * 4) or Vector3.new(0, 0, 0))
         local sword = getCurrentSword()
         killauraremote:SendToServer({
             ["weapon"] = sword ~= nil and sword.tool,
@@ -445,7 +449,7 @@ runcode(function()
         HoverText = "Removes the swinging animation."
     })
 end)
-
+								
 runcode(function()
 	local NoFall = {Enabled = false}
 	NoFall = Sections["NoFall"].CreateToggle({

@@ -361,79 +361,89 @@ runFunction(function()
 end)
 
 runcode(function()
-	local KillauraNoSwing = {Enabled = false}
-	local KillauraNoSound = {Enabled = false}
-	local killaurarange = {Value = 23}
-	local Killaura = {Enabled = false}
-	local killauraremote = bedwars.ClientHandler:Get(bedwars.AttackRemote)
-	local function attackEntity(plr)
-		local root = plr.Character.HumanoidRootPart
-		if not root then
-			return nil
-		end
-		local selfrootpos = lplr.Character.HumanoidRootPart.Position
-		local selfpos = selfrootpos + (killaurarange.Value > 14 and (selfrootpos - root.Position).magnitude > 14 and (CFrame.lookAt(selfrootpos, root.Position).lookVector * 4) or Vector3.zero)
-		local sword = getCurrentSword()
-		killauraremote:SendToServer({
-			["weapon"] = sword ~= nil and sword.tool,
-			["entityInstance"] = plr.Character,
-			["validate"] = {
-				["raycast"] = {
-					["cameraPosition"] = hashvec(cam.CFrame.Position),
-					["cursorDirection"] = hashvec(Ray.new(cam.CFrame.Position, root.CFrame.Position).Unit.Direction)
-				},
-				["targetPosition"] = hashvec(root.CFrame.Position),
-				["selfPosition"] = hashvec(selfpos)
-			},
-			["chargedAttack"] = {
-				["chargeRatio"] = 0}
-		})
-		if not KillauraNoSwing.Enabled then
-			if Killaura.Enabled then
-				playAnimation("rbxassetid://4947108314")
-			end
-		end
-		if not KillauraNoSound.Enabled then
-			if Killaura.Enabled then
-				playSound("rbxassetid://6760544639", 0.5)
-			end
-		end
-	end
-	Killaura = Sections["Killaura"].CreateToggle({
-		Name = "Killaura",
-		Function = function(callback)
-			Killaura.Enabled = callback
-			if Killaura.Enabled then
-				Settings.Killaura.Enabled = true
-				RunLoops:BindToHeartbeat("Killaura", 1, function()
-					local plrs = GetAllNearestHumanoidToPosition(killaurarange.Value - 0.0001, 1)
-					for i,plr in pairs(plrs) do
-						task.spawn(attackEntity, plr)
-					end
-				end)
-			else
-				Settings.Killaura.Enabled = false
-				RunLoops:UnbindFromHeartbeat("Killaura")
-			end
-		end,
-		HoverText = "Attack players/enemies that are near."
-	})
-	KillauraNoSound = Sections["Killaura"].CreateToggle({
-		Name = "No Sound",
-		Function = function(val)
-			Settings.Killaura.NoSound = val
-			KillauraNoSound.Enabled = val
-		end,
-		HoverText = "Removes the swinging sound."
-	})
-	KillauraNoSwing = Sections["Killaura"].CreateToggle({
-		Name = "No Swing",
-		Function = function(val)
-			Settings.Killaura.NoSwing = val
-			KillauraNoSwing.Enabled = val
-		end,
-		HoverText = "Removes the swinging animation."
-	})
+    local KillauraNoSwing = {Enabled = false}
+    local KillauraNoSound = {Enabled = false}
+    local killaurarange = {Value = 23}
+    local Killaura = {Enabled = false}
+    local killauraremote = bedwars.ClientHandler:Get(bedwars.AttackRemote)
+    
+    local function attackEntity(plr)
+        local root = plr.Character.HumanoidRootPart
+        if not root then
+            return nil
+        end
+        
+        local selfrootpos = lplr.Character.HumanoidRootPart.Position
+        local selfpos = selfrootpos + (killaurarange.Value > 14 and (selfrootpos - root.Position).magnitude > 14 and (CFrame.lookAt(selfrootpos, root.Position).lookVector * 4) or Vector3.zero)
+        local sword = getCurrentSword()
+        killauraremote:SendToServer({
+            ["weapon"] = sword ~= nil and sword.tool,
+            ["entityInstance"] = plr.Character,
+            ["validate"] = {
+                ["raycast"] = {
+                    ["cameraPosition"] = hashvec(cam.CFrame.Position),
+                    ["cursorDirection"] = hashvec(Ray.new(cam.CFrame.Position, root.CFrame.Position).Unit.Direction)
+                },
+                ["targetPosition"] = hashvec(root.CFrame.Position),
+                ["selfPosition"] = hashvec(selfpos)
+            },
+            ["chargedAttack"] = {
+                ["chargeRatio"] = 0
+            }
+        })
+        
+        if not KillauraNoSwing.Enabled then
+            if Killaura.Enabled then
+                playAnimation("rbxassetid://4947108314")
+            end
+        end
+        
+        if not KillauraNoSound.Enabled then
+            if Killaura.Enabled then
+                playSound("rbxassetid://6760544639", 0.5)
+            end
+        end
+    end
+    
+    Killaura = Sections["Killaura"].CreateToggle({
+        Name = "Killaura",
+        Function = function(callback)
+            Killaura.Enabled = callback
+            if Killaura.Enabled then
+                Settings.Killaura.Enabled = true
+                RunLoops:BindToHeartbeat("Killaura", 1, function()
+                    local plrs = game:GetService("Players"):GetPlayers()
+                    for i, plr in pairs(plrs) do
+                        if plr ~= lplr then
+                            task.spawn(attackEntity, plr)
+                        end
+                    end
+                end)
+            else
+                Settings.Killaura.Enabled = false
+                RunLoops:UnbindFromHeartbeat("Killaura")
+            end
+        end,
+        HoverText = "Attack players/enemies that are near."
+    })
+    
+    KillauraNoSound = Sections["Killaura"].CreateToggle({
+        Name = "No Sound",
+        Function = function(val)
+            Settings.Killaura.NoSound = val
+            KillauraNoSound.Enabled = val
+        end,
+        HoverText = "Removes the swinging sound."
+    })
+    
+    KillauraNoSwing = Sections["Killaura"].CreateToggle({
+        Name = "No Swing",
+        Function = function(val)
+            Settings.Killaura.NoSwing = val
+            KillauraNoSwing.Enabled = val
+        end,
+        HoverText = "Removes the swinging animation."
+    })
 end)
 
 runcode(function()
